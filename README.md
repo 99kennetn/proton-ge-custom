@@ -1,3 +1,8 @@
+!!NB!!
+THIS FORK IS ONLY UPDATED FOR MY OWN PERSONAL USAGE TOGETHER WITH AN AI AGENT TO SEE IF IT IS POSSIBLE TO RUN THE FULL STAXEL GAME.
+
+
+
 > [!Caution]
 >  **Myself (GloriousEggroll) and this project (GE-Proton) are not affiliated with any other websites related to GE-Proton. There is no existing website for GE-Proton other than this GitHub repository.**
 
