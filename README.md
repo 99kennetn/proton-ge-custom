@@ -1,5 +1,5 @@
 > [!Caution]
-> I am in no way affiliated with either GloriousEggroll or steam in any way shape or form.
+> I (99kennetn) am in no way affiliated with either GloriousEggroll or steam in any way shape or form.
 > THIS FORK IS ONLY MADE FOR MY OWN PERSONAL USAGE TOGETHER WITH AN AI AGENT TO SEE IF IT IS POSSIBLE TO RUN THE FULL STAXEL GAME.
 
 
