@@ -325,6 +325,9 @@ apply_all_in_dir() {
     done
 
     echo "WINE: RUN AUTOCONF TOOLS/MAKE_REQUESTS"
+    echo "WINE: -CUSTOM- Staxel winproc handle sign-extension fix"
+    apply_patch "../patches/wine-hotfixes/winproc-signext/0001-win32u-accept-sign-extended-winproc-handles.patch"
+
     autoreconf -f
     ./tools/make_requests
 

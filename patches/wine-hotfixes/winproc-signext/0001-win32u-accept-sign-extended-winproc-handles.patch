@@ -1,0 +1,118 @@
+diff --git a/dlls/win32u/class.c b/dlls/win32u/class.c
+index dc1a42b381d..742194c805d 100644
+--- a/dlls/win32u/class.c
++++ b/dlls/win32u/class.c
+@@ -110,7 +110,12 @@ static WINDOWPROC *find_winproc( WNDPROC func, BOOL ansi )
+ static WINDOWPROC *get_winproc_ptr( WNDPROC handle )
+ {
+     UINT index = LOWORD(handle);
+-    if ((ULONG_PTR)handle >> 16 != WINPROC_HANDLE) return NULL;
++    ULONG_PTR val = (ULONG_PTR)handle;
++    /* An application may have kept this handle in a 32-bit field: the ANSI
++     * Set/GetWindowLong APIs only carry a LONG, so it arrives sign-extended
++     * as 0xffffffffffffff00xx.  That is still the same handle. */
++    if ((val & ~(ULONGLONG)0xffff) != ((ULONGLONG)WINPROC_HANDLE << 16) &&
++        (val & ~(ULONGLONG)0xffff) != (ULONGLONG)0xffffffffffff0000) return NULL;
+     if (index >= MAX_WINPROCS) return WINPROC_PROC16;
+     if (index >= winproc_used) return NULL;
+     return &winproc_array[index];
+@@ -122,6 +127,35 @@ static inline WNDPROC proc_to_handle( WINDOWPROC *proc )
+     return (WNDPROC)(ULONG_PTR)((proc - winproc_array) | (WINPROC_HANDLE << 16));
+ }
+ 
++/* A window procedure that went through the ANSI Set/GetWindowLong APIs
++ * arrives as a 32-bit LONG: truncated and sign-extended.  Recover the
++ * real procedure from the table, which holds every one we accepted. */
++static WNDPROC fixup_truncated_winproc( WNDPROC func )
++{
++    unsigned int i;
++
++    if (((ULONGLONG)(ULONG_PTR)func >> 32) != 0xffffffff) return func;
++    for (i = 0; i < winproc_used; i++)
++    {
++        if (winproc_array[i].procA && ((ULONG_PTR)winproc_array[i].procA & 0xffffffff) ==
++                                      ((ULONG_PTR)func & 0xffffffff))
++        {
++            WARN( "recovering 32-bit truncated proc %p as %p\n",
++                  (void *)func, (void *)winproc_array[i].procA );
++            return winproc_array[i].procA;
++        }
++        if (winproc_array[i].procW && ((ULONG_PTR)winproc_array[i].procW & 0xffffffff) ==
++                                      ((ULONG_PTR)func & 0xffffffff))
++        {
++            WARN( "recovering 32-bit truncated proc %p as %p\n",
++                  (void *)func, (void *)winproc_array[i].procW );
++            return winproc_array[i].procW;
++        }
++    }
++    WARN( "no winproc matches truncated proc %p\n", (void *)func );
++    return func;
++}
++
+ /* allocate and initialize a new winproc */
+ static inline WINDOWPROC *alloc_winproc_ptr( WNDPROC func, BOOL ansi )
+ {
+@@ -129,6 +163,7 @@ static inline WINDOWPROC *alloc_winproc_ptr( WNDPROC func, BOOL ansi )
+ 
+     /* check if the function is already a win proc */
+     if (!func) return NULL;
++    func = fixup_truncated_winproc( func );
+     if ((proc = get_winproc_ptr( func ))) return proc;
+ 
+     pthread_mutex_lock( &winproc_lock );
+@@ -203,6 +238,7 @@ BOOL is_winproc_unicode( WNDPROC proc, BOOL def_val )
+ void get_winproc_params( struct win_proc_params *params, BOOL fixup_ansi_dst )
+ {
+     WINDOWPROC *proc = get_winproc_ptr( params->func );
++    params->func = fixup_truncated_winproc( params->func );
+ 
+     if (!proc)
+     {
+@@ -214,8 +250,12 @@ void get_winproc_params( struct win_proc_params *params, BOOL fixup_ansi_dst )
+     }
+     else
+     {
+-        params->procA = proc->procA;
+-        params->procW = proc->procW;
++        /* An application may register only one of the A/W variants of its
++         * window procedure.  Fall back to the other variant instead of letting
++         * the raw winproc handle reach the callback, where it would be called
++         * as a function pointer. */
++        params->procA = fixup_truncated_winproc( proc->procA ? proc->procA : proc->procW );
++        params->procW = fixup_truncated_winproc( proc->procW ? proc->procW : proc->procA );
+ 
+         if (fixup_ansi_dst)
+         {
+@@ -232,8 +272,19 @@ void get_winproc_params( struct win_proc_params *params, BOOL fixup_ansi_dst )
+         }
+     }
+ 
+-    if (!params->procA) params->procA = params->func;
+-    if (!params->procW) params->procW = params->func;
++    if (!proc)
++    {
++        /* params->func is a real procedure only when no handle entry
++         * was found; never hand a handle to the callback. */
++        if (((ULONG_PTR)params->func >> 16) == 0xffff)
++            WARN( "winproc handle %p not found in current process\n", params->func );
++        params->procA = params->procW = params->func;
++    }
++    else if (!params->procA && !params->procW)
++    {
++        WARN( "winproc handle %p has neither A nor W proc\n", params->func );
++        params->procA = params->procW = params->func;
++    }
+ }
+ 
+ DLGPROC get_dialog_proc( DLGPROC ret, BOOL ansi )
+@@ -242,7 +293,9 @@ DLGPROC get_dialog_proc( DLGPROC ret, BOOL ansi )
+ 
+     if (!(proc = get_winproc_ptr( (WNDPROC)ret ))) return ret;
+     if (proc == WINPROC_PROC16) return WINPROC_PROC16;
+-    return (DLGPROC)(ansi ? proc->procA : proc->procW);
++    if (ansi && proc->procA) return (DLGPROC)proc->procA;
++    if (!ansi && proc->procW) return (DLGPROC)proc->procW;
++    return (DLGPROC)ret;   /* handle round-trips in 32 bits */
+ }
+ 
+ static void init_user(void)

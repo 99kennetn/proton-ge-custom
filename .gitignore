@@ -5,3 +5,9 @@
 
 /.vagrant/
 /vagrant_share/
+
+build/
+*.orig
+contrib/
+*.rej
+lsteamclient/steam_overlay_focus.h

@@ -1671,6 +1671,7 @@ def default_compat_config():
                 "3513350", #Wuthering Waves
                 "3837340", #FINAL FANTASY VII
                 "337000", #Deus Ex: Mankind Divided
+                "405710", #Staxel
                 ]:
             ret.add("noxalia")
 

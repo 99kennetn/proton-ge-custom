@@ -1,4 +1,12 @@
 > [!Caution]
+> I (99kennetn) am in no way affiliated with either GloriousEggroll or steam in any way shape or form.
+> THIS FORK IS ONLY MADE FOR MY OWN PERSONAL USAGE TOGETHER WITH AN AI AGENT TO SEE IF IT IS POSSIBLE TO RUN THE FULL STAXEL GAME.
+> It is used as a personal benchmark to check out ai capabilities.
+
+> [!Note]
+> **Build and run guide for Staxel (405710) in this fork: [RUNNING-STAXEL.md](RUNNING-STAXEL.md)**
+
+> [!Caution]
 >  **Myself (GloriousEggroll) and this project (GE-Proton) are not affiliated with any other websites related to GE-Proton. There is no existing website for GE-Proton other than this GitHub repository.**
 
 > [!Important]
