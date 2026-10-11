@@ -2,6 +2,9 @@
 > I (99kennetn) am in no way affiliated with either GloriousEggroll or steam in any way shape or form.
 > THIS FORK IS ONLY MADE FOR MY OWN PERSONAL USAGE TOGETHER WITH AN AI AGENT TO SEE IF IT IS POSSIBLE TO RUN THE FULL STAXEL GAME.
 > It is used as a personal benchmark to check out ai capabilities.
+> I do not claim to fully understand the code written here and it will, because of that, not be submitted to wine, proton or GE-proton as a solution.
+> But i hope it can give other people the idea of how to get the full Staxel to work under proton correctly.
+> Use the code at your own risk!
 
 > [!Note]
 > **Build and run guide for Staxel (405710) in this fork: [RUNNING-STAXEL.md](RUNNING-STAXEL.md)**
