@@ -109,6 +109,11 @@ Check the result — this file must exist:
 ls ~/.local/share/Steam/steamapps/compatdata/405710/pfx/drive_c/windows/Microsoft.NET/Framework64/v4.0.30319/clr.dll
 ```
 
+The easiest way to be able to run the install for dotnet is to run the game once to build the compatdata folder (it will fail to launch), and then run the command
+```sh
+protontricks 405710 dotnet48
+```
+
 Once it is in place, do not delete `~/.local/share/Steam/steamapps/compatdata/405710`:
 it holds that CLR, and winetricks' `dotnet48` begins with `remove_mono`, which
 takes it away again.
